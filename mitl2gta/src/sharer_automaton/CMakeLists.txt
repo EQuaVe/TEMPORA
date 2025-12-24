@@ -1,0 +1,9 @@
+target_sources(mitl2gta_LIB 
+  PRIVATE 
+  "${CMAKE_CURRENT_SOURCE_DIR}/sharer_registry.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/translation.cpp"
+  PUBLIC
+  "${mitl2gta_INCLUDE_DIR}/sharer_automaton/sharer_types.hpp"
+  "${mitl2gta_INCLUDE_DIR}/sharer_automaton/sharer_registry.hpp"
+  "${mitl2gta_INCLUDE_DIR}/sharer_automaton/translation.hpp"
+)

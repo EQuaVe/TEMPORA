@@ -1,0 +1,18 @@
+target_sources(mitl2gta_LIB 
+  PRIVATE 
+  "${CMAKE_CURRENT_SOURCE_DIR}/edge.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/location.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/process.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/static_analysis.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/synchronization.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/system.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/variable.cpp"
+  PUBLIC
+  "${mitl2gta_INCLUDE_DIR}/gta_system/edge.hpp"
+  "${mitl2gta_INCLUDE_DIR}/gta_system/location.hpp"
+  "${mitl2gta_INCLUDE_DIR}/gta_system/process.hpp"
+  "${mitl2gta_INCLUDE_DIR}/gta_system/static_analysis.hpp"
+  "${mitl2gta_INCLUDE_DIR}/gta_system/synchronization.hpp"
+  "${mitl2gta_INCLUDE_DIR}/gta_system/system.hpp"
+  "${mitl2gta_INCLUDE_DIR}/gta_system/variable.hpp"
+)

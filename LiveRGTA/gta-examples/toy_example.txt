@@ -1,0 +1,18 @@
+system:example
+
+event:e1
+
+process:P1
+
+# Prophecy clock
+clock:1:x{type: prophecy}
+
+# History clock initialised to zero
+clock:1:y1{type: history_zero}
+clock:1:y2{type: history_zero}
+
+location:P1:l0{initial:}	
+location:P1:l1{labels: final1}	
+
+edge:P1:l0:l1:e1{gta_program: x <= -2 && y1 > 3; [x], y2 = y1, [y1]; x == -inf;}
+

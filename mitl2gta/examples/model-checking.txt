@@ -1,0 +1,108 @@
+system:mitl2gta_translation
+
+event:consume_event0
+event:consume_event1
+event:consume_event2
+event:consume_event3
+event:move0
+event:move1
+event:move2
+event:move3
+event:move_model
+event:start_round
+
+int:1:0:1:0:global0
+int:1:0:1:0:global1
+int:1:-1:1:-1:locals
+
+clock:1:clk0{type:history_inf}
+clock:1:clk1{type:prophecy}
+
+process:process0
+
+location:process0:loc4{initial:}
+location:process0:loc5{}
+
+edge:process0:loc4:loc5:consume_event0{gta_program:;[clk0];}
+edge:process0:loc5:loc5:consume_event0{}
+
+process:process1
+
+location:process1:loc0{initial:}
+location:process1:loc1{labels:final0}
+location:process1:loc2{labels:final0}
+
+edge:process1:loc0:loc0:consume_event1{do:locals=-1 : gta_program:clk0<1; : provided:global0==1}
+edge:process1:loc0:loc0:consume_event1{do:locals=-1 : gta_program:clk0>=1 && clk0<=2; : provided:global0==1 && global1==0}
+edge:process1:loc0:loc1:consume_event1{do:locals=1 : gta_program:clk0>=1 && clk0<=2; : provided:global1==1}
+edge:process1:loc1:loc1:consume_event1{do:locals=1}
+edge:process1:loc0:loc2:consume_event1{do:locals=0 : gta_program:clk0<1; : provided:global0==0}
+edge:process1:loc0:loc2:consume_event1{do:locals=0 : gta_program:clk0>=1 && clk0<=2; : provided:global0==0 && global1==0}
+edge:process1:loc0:loc2:consume_event1{do:locals=0 : gta_program:clk0>2;}
+edge:process1:loc2:loc2:consume_event1{do:locals=0}
+
+process:process2
+
+location:process2:loc3{initial:}
+
+edge:process2:loc3:loc3:consume_event2{do:locals=-1; locals=-1 : provided:locals==-1}
+edge:process2:loc3:loc3:consume_event2{do:locals=-1; locals=1 : provided:locals==0}
+edge:process2:loc3:loc3:consume_event2{do:locals=-1; locals=0 : provided:locals==1}
+
+process:process3
+
+location:process3:loc6{initial:}
+location:process3:loc7{labels:final1}
+
+edge:process3:loc6:loc6:consume_event3{do:locals=-1 : provided:locals==-1}
+edge:process3:loc6:loc7:consume_event3{do:locals=-1 : provided:locals==1}
+edge:process3:loc7:loc7:consume_event3{do:locals=-1}
+
+process:controller
+
+location:controller:control_init{initial:}
+location:controller:control_model{urgent:}
+location:controller:control0{urgent:}
+location:controller:control1{urgent:}
+location:controller:control2{urgent:}
+location:controller:control3{urgent:}
+
+edge:controller:control_init:control_model:start_round{gta_program:clk1>-inf;}
+edge:controller:control_init:control_model:start_round{gta_program:clk1==0;[clk1];clk1<=-1 && clk1>-inf;}
+edge:controller:control_model:control0:move_model{}
+edge:controller:control0:control1:move0{}
+edge:controller:control1:control2:move1{}
+edge:controller:control2:control3:move2{}
+edge:controller:control3:control_init:move3{}
+
+sync:controller@move0:process0@consume_event0
+sync:controller@move1:process1@consume_event1
+sync:controller@move2:process2@consume_event2
+sync:controller@move3:process3@consume_event3
+
+## Model
+
+process:model
+
+location:model:loc1{initial:}
+location:model:loc2
+location:model:loc3
+
+clock:1:timer{type:history_zero}
+
+event:tau
+
+# We see p at t=0 
+edge:model:loc1:loc2:tau{do: global0=1; global1=0 : gta_program: timer == 0;}
+
+# We see a q at t=1
+edge:model:loc2:loc3:tau{do: global0=0; global1=1 : gta_program: timer == 1;}
+
+edge:model:loc3:loc3:tau{do: global0=0; global1=0}
+
+# p U[1, 2] q is satisfiable
+
+# Synchronise model with translation
+sync:controller@move_model:model@tau
+
+

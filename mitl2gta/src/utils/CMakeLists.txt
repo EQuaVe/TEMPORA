@@ -1,0 +1,10 @@
+target_sources(mitl2gta_LIB 
+  PRIVATE 
+  "${CMAKE_CURRENT_SOURCE_DIR}/extended_int.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/id_allocator.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/string_construction.cpp"
+  PUBLIC
+  "${mitl2gta_INCLUDE_DIR}/utils/extended_int.hpp"
+  "${mitl2gta_INCLUDE_DIR}/utils/id_allocator.hpp"
+  "${mitl2gta_INCLUDE_DIR}/utils/string_construction.hpp"
+)

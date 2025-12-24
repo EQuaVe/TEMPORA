@@ -1,0 +1,20 @@
+target_sources(mitl2gta_LIB 
+  PRIVATE 
+  "${CMAKE_CURRENT_SOURCE_DIR}/edge.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/edge_discrete_attributes.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/gta_program.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/state.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/static_analysis.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/system.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/transducer.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/translation.cpp"
+  PUBLIC
+  "${mitl2gta_INCLUDE_DIR}/transducer/edge.hpp"
+  "${mitl2gta_INCLUDE_DIR}/transducer/edge_discrete_attributes.hpp"
+  "${mitl2gta_INCLUDE_DIR}/transducer/gta_program.hpp"
+  "${mitl2gta_INCLUDE_DIR}/transducer/state.hpp"
+  "${mitl2gta_INCLUDE_DIR}/transducer/static_analysis.hpp"
+  "${mitl2gta_INCLUDE_DIR}/transducer/system.hpp"
+  "${mitl2gta_INCLUDE_DIR}/transducer/transducer.hpp"
+  "${mitl2gta_INCLUDE_DIR}/transducer/translation.hpp"
+)

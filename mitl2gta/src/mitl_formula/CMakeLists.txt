@@ -1,0 +1,12 @@
+target_sources(mitl2gta_LIB 
+  PRIVATE 
+  "${CMAKE_CURRENT_SOURCE_DIR}/factory.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/parsed_formula.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/static_analysis.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/tree_transformations.cpp"
+  PUBLIC
+  "${mitl2gta_INCLUDE_DIR}/mitl_formula/parsed_formula.hpp"
+  "${mitl2gta_INCLUDE_DIR}/mitl_formula/factory.hpp"
+  "${mitl2gta_INCLUDE_DIR}/mitl_formula/static_analysis.hpp"
+  "${mitl2gta_INCLUDE_DIR}/mitl_formula/tree_transformations.hpp"
+)
