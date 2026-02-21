@@ -239,6 +239,9 @@ mitl2gta::transducer::transducer_t p_until_q_untimed_infinite(
   mitl2gta::memory::memory_id_t const p_until_q_val =
       p_until_q.p_until_q_truth_value;
 
+  mitl2gta::memory::memory_id_t const next_p_until_q_val =
+      p_until_q.next_p_until_q_truth_value;
+
   mitl2gta::transducer::state_t q_true(tools.state_id_allocator);
   q_true.make_initial();
   q_true.make_final();
@@ -302,6 +305,16 @@ mitl2gta::transducer::transducer_t p_until_q_untimed_infinite(
       e.actions().emplace_back(set_memory_value_t{
           p_until_q_val, mitl2gta::sharer::SHARER_FALSE_VAL});
     }
+
+    if (e.to() == q_true.id() || e.to() == q_false_p_u_q_true.id()) {
+      e.actions().emplace_back(set_memory_value_t{
+          next_p_until_q_val, mitl2gta::sharer::SHARER_TRUE_VAL});
+    }
+
+    else {
+      e.actions().emplace_back(set_memory_value_t{
+          next_p_until_q_val, mitl2gta::sharer::SHARER_FALSE_VAL});
+    }
   }
 
   return {{q_true, q_false_p_u_q_true, p_until_q_false}, std::move(edges)};
@@ -315,6 +328,9 @@ mitl2gta::transducer::transducer_t p_until_q_first_witness_two_state_infinite(
 
   mitl2gta::memory::memory_id_t const p_until_q_val =
       p_until_q.p_until_q_truth_value;
+
+  mitl2gta::memory::memory_id_t const next_p_until_q_val =
+      p_until_q.next_p_until_q_truth_value;
 
   mitl2gta::clock::clock_id_t const first_witness_clk =
       p_until_q.first_witness_predicting_clk.value();
@@ -362,8 +378,16 @@ mitl2gta::transducer::transducer_t p_until_q_first_witness_two_state_infinite(
     }
 
     if (e.to() == s_true.id()) {
+      e.actions().emplace_back(set_memory_value_t{
+          next_p_until_q_val, mitl2gta::sharer::SHARER_TRUE_VAL});
+
       e.gta_program().emplace_back(clock_val_greater_than{
           first_witness_clk, mitl2gta::EXTENDED_MINUS_INF});
+    }
+
+    else {
+      e.actions().emplace_back(set_memory_value_t{
+          next_p_until_q_val, mitl2gta::sharer::SHARER_FALSE_VAL});
     }
   }
 
@@ -560,7 +584,7 @@ p_until_q_first_last_witness_three_state_infinite(
           p_until_q_val, mitl2gta::sharer::SHARER_FALSE_VAL});
     }
 
-    if (e.to() == q_true.id() || not_q_p_until_q_true.id()) {
+    if (e.to() == q_true.id() || e.to() == not_q_p_until_q_true.id()) {
       e.actions().emplace_back(set_memory_value_t{
           next_p_until_q_val, mitl2gta::sharer::SHARER_TRUE_VAL});
     }
