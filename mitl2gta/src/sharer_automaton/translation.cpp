@@ -87,6 +87,9 @@ mitl2gta::transducer::transducer_t p_until_q_untimed_finite(
   mitl2gta::memory::memory_id_t const p_until_q_val =
       p_until_q.p_until_q_truth_value;
 
+  mitl2gta::memory::memory_id_t const next_p_until_q_val =
+      p_until_q.next_p_until_q_truth_value;
+
   mitl2gta::transducer::state_t s_true(tools.state_id_allocator);
   s_true.make_initial();
   mitl2gta::transducer::state_t s_false(tools.state_id_allocator);
@@ -128,6 +131,16 @@ mitl2gta::transducer::transducer_t p_until_q_untimed_finite(
     else {
       e.actions().emplace_back(set_memory_value_t{
           p_until_q_val, mitl2gta::sharer::SHARER_FALSE_VAL});
+    }
+
+    if (e.to() == s_true.id()) {
+      e.actions().emplace_back(set_memory_value_t{
+          next_p_until_q_val, mitl2gta::sharer::SHARER_TRUE_VAL});
+    }
+
+    else {
+      e.actions().emplace_back(set_memory_value_t{
+          next_p_until_q_val, mitl2gta::sharer::SHARER_FALSE_VAL});
     }
   }
 

@@ -408,7 +408,7 @@ compiled_upper_bounded_until_t::generate_truth_value_predictor(
       p_until_q.first_witness_predicting_clk.value();
 
   mitl2gta::transducer::edge_t const e1(
-      s1.id(), s1.id(), on_node_values_t{},
+      s1.id(), s1.id(), on_node_values_t{{{rchild(), node_value_t::FALSE}}},
       {provided_memory_value_t{p_until_q.next_p_until_q_truth_value,
                                mitl2gta::sharer::SHARER_FALSE_VAL}},
       {set_node_value_t{_id, node_value_t::FALSE}}, {});
