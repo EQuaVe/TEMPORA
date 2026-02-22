@@ -320,10 +320,22 @@ compiled_timed_until_t::generate_truth_value_predictor(
           clock_val_equal_to_t{y_clks.at(0), mitl2gta::EXTENDED_MINUS_INF});
 
       if (kprime == 1) {
-        edges.emplace_back(mitl2gta::transducer::edge_t(
-            locations_2.at(k).id(), locations_1.at(0).id(),
-            {on_node_values_t{{{rchild(), node_value_t::TRUE}}}}, {},
-            {set_node_value_t{id(), val}}, gta_prog));
+        if (val == node_value_t::TRUE) {
+          edges.emplace_back(mitl2gta::transducer::edge_t(
+              locations_2.at(k).id(), locations_1.at(0).id(),
+              {on_node_values_t{{{rchild(), node_value_t::TRUE},
+                                 {lchild(), node_value_t::TRUE}}}},
+              {provided_memory_value_t{
+                  p_until_q_sharer.next_p_until_q_truth_value,
+                  mitl2gta::sharer::SHARER_TRUE_VAL}},
+              {set_node_value_t{id(), val}}, gta_prog));
+        } else {
+          edges.emplace_back(mitl2gta::transducer::edge_t(
+              locations_2.at(k).id(), locations_1.at(0).id(),
+              {on_node_values_t{{{rchild(), node_value_t::TRUE}}}}, {},
+              {set_node_value_t{id(), val}}, gta_prog));
+        }
+
       } else {
         std::vector<mitl2gta::clock::clock_id_t> shiftx_clks;
         std::vector<mitl2gta::clock::clock_id_t> shifty_clks;
