@@ -84,6 +84,12 @@ gta_program_type_t type(mitl2gta::transducer::gta_program_t const &prog) {
 
         else if constexpr (std::is_same_v<
                                T,
+                               mitl2gta::transducer::clock_val_less_than_t>) {
+          return gta_program_type_t::GUARD;
+        }
+
+        else if constexpr (std::is_same_v<
+                               T,
                                mitl2gta::transducer::release_reset_clock_t>) {
           return gta_program_type_t::ACTION;
         }
@@ -399,6 +405,12 @@ gta_program_disjunction(mitl2gta::transducer::gta_program_t const &prog,
                                T,
                                mitl2gta::transducer::clock_val_less_equals_t>) {
           return {clk_leq_val(arg.clk_id, arg.value)};
+        }
+
+        else if constexpr (std::is_same_v<
+                               T,
+                               mitl2gta::transducer::clock_val_less_than_t>) {
+          return {clk_lt_val(arg.clk_id, arg.value)};
         }
 
         else if constexpr (std::is_same_v<
