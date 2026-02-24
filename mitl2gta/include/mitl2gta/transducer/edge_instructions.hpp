@@ -59,6 +59,11 @@ struct clock_val_greater_than {
   mitl2gta::extended_integer_t value;
 };
 
+struct clock_val_less_than_t {
+  mitl2gta::clock::clock_id_t clk_id;
+  mitl2gta::extended_integer_t value;
+};
+
 struct clock_val_less_equals_t {
   mitl2gta::clock::clock_id_t clk_id;
   mitl2gta::extended_integer_t value;
@@ -82,6 +87,7 @@ using gta_program_t =
                  mitl2gta::transducer::clock_val_equal_to_t,
                  mitl2gta::transducer::clock_val_greater_than,
                  mitl2gta::transducer::clock_val_less_equals_t,
+                 mitl2gta::transducer::clock_val_less_than_t,
                  mitl2gta::transducer::release_reset_clock_t,
                  mitl2gta::transducer::shift_clocks_backward_t>;
 
