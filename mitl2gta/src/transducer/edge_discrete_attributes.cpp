@@ -81,6 +81,26 @@ std::string provided_for_on_cond(
 
           return mitl2gta::join(conds.cbegin(), conds.cend(), PROVIDED_DELIM);
         }
+
+        if constexpr (std::is_same_v<
+                          T,
+                          mitl2gta::transducer::on_epsilon_node_values_t>) {
+          std::vector<std::string> conds;
+          for (auto const &[id, value] : arg.id_to_value) {
+            mitl2gta::boolean::expression_t const expr =
+                mitl2gta::compilation::expression_for_predictor(
+                    id, node_to_truth_value_predictor, placeholder_memory);
+
+            std::string cond_expr =
+                mitl2gta::boolean::boolean_expression(expr, mapping);
+
+            int expr_val = node_value_to_boolean_value(value);
+
+            conds.emplace_back(expr_cmp_val(cond_expr, expr_val, "=="));
+          }
+
+          return mitl2gta::join(conds.cbegin(), conds.cend(), PROVIDED_DELIM);
+        }
       },
       on);
 }
