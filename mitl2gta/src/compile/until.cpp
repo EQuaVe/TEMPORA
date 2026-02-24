@@ -145,6 +145,10 @@ compiled_timed_until_t::generate_truth_value_predictor(
 
   locations_1.at(0).make_initial();
 
+  if (specs.system_for == mitl2gta::transducer::system_for_t::INFINITE_TRACE) {
+    locations_1.at(0).make_final();
+  }
+
   if (specs.system_for == mitl2gta::transducer::system_for_t::FINITE_TRACE) {
     locations_1.at(0).make_final();
   }

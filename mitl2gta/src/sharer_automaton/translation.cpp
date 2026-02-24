@@ -433,6 +433,12 @@ p_until_q_first_last_witness_two_state_infinite(
       clock_val_equal_to_t{last_witness_clk, 0},
       release_reset_clock_t{last_witness_clk}};
 
+  std::vector<mitl2gta::transducer::gta_program_t> const
+      check_and_release_and_invalidate{
+          clock_val_equal_to_t{last_witness_clk, 0},
+          release_reset_clock_t{last_witness_clk},
+          clock_val_equal_to_t{last_witness_clk, mitl2gta::EXTENDED_MINUS_INF}};
+
   std::vector<mitl2gta::transducer::edge_t> edges;
 
   edges.emplace_back(mitl2gta::transducer::edge_t(
@@ -455,7 +461,7 @@ p_until_q_first_last_witness_two_state_infinite(
 
   edges.emplace_back(mitl2gta::transducer::edge_t(
       s_true.id(), s_false.id(), on_node_values_t{{{q_id, node_value_t::TRUE}}},
-      {}, {}, check_and_release));
+      {}, {}, check_and_release_and_invalidate));
 
   edges.emplace_back(mitl2gta::transducer::edge_t(
       s_false.id(), s_false.id(),
@@ -465,7 +471,7 @@ p_until_q_first_last_witness_two_state_infinite(
       s_false.id(), s_true.id(),
       on_node_values_t{
           {{p_id, node_value_t::FALSE}, {q_id, node_value_t::FALSE}}},
-      {}, {}, {}));
+      {}, {}, {release_reset_clock_t{last_witness_clk}}));
 
   for (auto &e : edges) {
     if (e.from() == s_true.id()) {
