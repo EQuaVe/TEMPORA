@@ -17,10 +17,12 @@ using mitl2gta::transducer::clock_abs_val_in_interval_t;
 using mitl2gta::transducer::clock_abs_val_less_than_interval_t;
 using mitl2gta::transducer::clock_abs_val_not_in_interval_t;
 using mitl2gta::transducer::clock_val_greater_than;
+using mitl2gta::transducer::clock_val_greater_equals_t;
 using mitl2gta::transducer::clock_val_less_equals_t;
 using mitl2gta::transducer::clock_val_less_than_t;
 using mitl2gta::transducer::node_value_t;
 using mitl2gta::transducer::on_epsilon_t;
+using mitl2gta::transducer::on_epsilon_node_values_t;
 using mitl2gta::transducer::on_node_values_t;
 using mitl2gta::transducer::release_reset_clock_t;
 using mitl2gta::transducer::set_node_value_t;
@@ -192,27 +194,8 @@ compiled_timed_since_t::generate_truth_value_predictor(
           {clock_abs_val_greater_than_interval_t{x1, interval()},
            {clock_abs_val_greater_than_interval_t{y1, interval()}}}};
 
-//   for (int i = 1; i < num_locs; i++) {
-//     for (auto const &gta_prog : either_in_interval) {
-//       edges.emplace_back(mitl2gta::transducer::edge_t(
-//           locations.at(i).id(), locations.at(i).id(),
-//           on_node_values_t{{{lchild(), node_value_t::TRUE},
-//                             {rchild(), node_value_t::FALSE}}},
-//           {}, {set_node_value_t{id(), node_value_t::TRUE}}, gta_prog));
-//     }
-
-//     for (auto const &gta_prog : both_out_intervals) {
-//       edges.emplace_back(mitl2gta::transducer::edge_t(
-//           locations.at(i).id(), locations.at(i).id(),
-//           on_node_values_t{{{lchild(), node_value_t::TRUE},
-//                             {rchild(), node_value_t::FALSE}}},
-//           {}, {set_node_value_t{id(), node_value_t::FALSE}}, gta_prog));
-//     }
-//   }
-
-
-     for (int i = 1; i < num_locs; i++) {
-  for (auto const &gta_prog : either_in_interval) {
+  for (int i = 1; i < num_locs; i++) {
+    for (auto const &gta_prog : either_in_interval) {
     std::vector<mitl2gta::transducer::gta_program_t> gta_prog_copy = gta_prog;
 
     // NEW: only allow this transition while shift condition is not enabled
@@ -239,33 +222,6 @@ compiled_timed_since_t::generate_truth_value_predictor(
   }
 }
    
-//   for (int i = 1; i < num_locs; i++) {
-//     for (auto const &gta_prog : either_in_interval) {
-//       std::vector<mitl2gta::transducer::gta_program_t> gta_prog_copy = gta_prog;
-//       gta_prog_copy.emplace_back(
-//           clock_val_less_equals_t{x_clks.at(i - 1), upper_bound - lower_bound});
-//       gta_prog_copy.emplace_back(release_reset_clock_t{y_clks.at(i - 1)});
-
-//       edges.emplace_back(mitl2gta::transducer::edge_t(
-//           locations.at(i).id(), locations.at(i).id(),
-//           on_node_values_t{
-//               {{lchild(), node_value_t::TRUE}, {rchild(), node_value_t::TRUE}}},
-//           {}, {set_node_value_t{id(), node_value_t::TRUE}}, gta_prog_copy));
-//     }
-
-//     for (auto const &gta_prog : both_out_intervals) {
-//       std::vector<mitl2gta::transducer::gta_program_t> gta_prog_copy = gta_prog;
-//       gta_prog_copy.emplace_back(
-//           clock_val_less_equals_t{x_clks.at(i - 1), upper_bound - lower_bound});
-//       gta_prog_copy.emplace_back(release_reset_clock_t{y_clks.at(i - 1)});
-
-//       edges.emplace_back(mitl2gta::transducer::edge_t(
-//           locations.at(i).id(), locations.at(i).id(),
-//           on_node_values_t{
-//               {{lchild(), node_value_t::TRUE}, {rchild(), node_value_t::TRUE}}},
-//           {}, {set_node_value_t{id(), node_value_t::FALSE}}, gta_prog_copy));
-//     }
-//   }
   for (int i = 1; i < num_locs; i++) {
   for (auto const &gta_prog : either_in_interval) {
     std::vector<mitl2gta::transducer::gta_program_t> gta_prog_copy = gta_prog;
@@ -274,7 +230,7 @@ compiled_timed_since_t::generate_truth_value_predictor(
     gta_prog_copy.emplace_back(clock_val_less_than_t{x_clks.at(i-1), lower_bound});
 
     gta_prog_copy.emplace_back(
-        clock_val_less_equals_t{x_clks.at(i - 1), upper_bound - lower_bound});
+        clock_val_less_than_t{x_clks.at(i - 1), upper_bound - lower_bound});
     gta_prog_copy.emplace_back(release_reset_clock_t{y_clks.at(i - 1)});
 
     edges.emplace_back(mitl2gta::transducer::edge_t(
@@ -291,7 +247,7 @@ compiled_timed_since_t::generate_truth_value_predictor(
     gta_prog_copy.emplace_back(clock_val_less_than_t{x_clks.at(i-1), lower_bound});
 
     gta_prog_copy.emplace_back(
-        clock_val_less_equals_t{x_clks.at(i - 1), upper_bound - lower_bound});
+        clock_val_less_than_t{x_clks.at(i - 1), upper_bound - lower_bound});
     gta_prog_copy.emplace_back(release_reset_clock_t{y_clks.at(i - 1)});
 
     edges.emplace_back(mitl2gta::transducer::edge_t(
@@ -306,7 +262,7 @@ compiled_timed_since_t::generate_truth_value_predictor(
     for (auto const &gta_prog : either_in_interval) {
       std::vector<mitl2gta::transducer::gta_program_t> gta_prog_copy = gta_prog;
       gta_prog_copy.emplace_back(
-          clock_val_greater_than{x_clks.at(i - 1), upper_bound - lower_bound});
+          clock_val_greater_equals_t{x_clks.at(i - 1), upper_bound - lower_bound});
       gta_prog_copy.emplace_back(release_reset_clock_t{x_clks.at(i)});
       gta_prog_copy.emplace_back(release_reset_clock_t{y_clks.at(i)});
 
@@ -320,7 +276,7 @@ compiled_timed_since_t::generate_truth_value_predictor(
     for (auto const &gta_prog : both_out_intervals) {
       std::vector<mitl2gta::transducer::gta_program_t> gta_prog_copy = gta_prog;
       gta_prog_copy.emplace_back(
-          clock_val_greater_than{x_clks.at(i - 1), upper_bound - lower_bound});
+          clock_val_greater_equals_t{x_clks.at(i - 1), upper_bound - lower_bound});
       gta_prog_copy.emplace_back(release_reset_clock_t{x_clks.at(i)});
       gta_prog_copy.emplace_back(release_reset_clock_t{y_clks.at(i)});
 
@@ -342,7 +298,8 @@ compiled_timed_since_t::generate_truth_value_predictor(
 
     mitl2gta::clock::clock_id_t const x2 = x_clks.at(1);
     edges.emplace_back(mitl2gta::transducer::edge_t(
-        locations.at(i).id(), locations.at(i - 1).id(), on_epsilon_t{}, {}, {},
+        locations.at(i).id(), locations.at(i - 1).id(),
+        on_epsilon_node_values_t{{{lchild(), node_value_t::TRUE}}}, {}, {},
         {{clock_abs_val_geq_lower_bound_t{x2, interval()},
           {shift_clocks_backward_t{shift_x_clks}},
           {shift_clocks_backward_t{shift_y_clks}}}}));

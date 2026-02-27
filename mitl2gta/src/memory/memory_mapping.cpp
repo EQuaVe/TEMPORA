@@ -96,7 +96,9 @@ private:
 void add_memory_free_instructions(mitl2gta::transducer::transducer_t &t,
                                   memory_id_t const id, int const null_value) {
   for (auto &e : t.edges) {
-    if (std::holds_alternative<mitl2gta::transducer::on_epsilon_t>(e.on())) {
+    if (std::holds_alternative<mitl2gta::transducer::on_epsilon_t>(e.on()) ||
+        std::holds_alternative<mitl2gta::transducer::on_epsilon_node_values_t>(
+            e.on())) {
       continue;
     }
     e.actions().insert(
