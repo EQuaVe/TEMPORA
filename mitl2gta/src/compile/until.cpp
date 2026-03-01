@@ -285,7 +285,7 @@ compiled_timed_until_t::generate_truth_value_predictor(
           clock_abs_val_greater_than_interval_t{y_clks.at(k), interval()},
       });
       all_progs.emplace_back(
-          general_until_prog_t{second_else2, k + 1, node_value_t::TRUE});
+          general_until_prog_t{second_else2, k + 1, node_value_t::FALSE});
     }
 
     for (auto const &prog : all_progs) {
