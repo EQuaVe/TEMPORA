@@ -55,12 +55,6 @@ std::string event_name(mitl2gta::transducer::transition_on_t const &on,
           return "epsilon_event" + std::to_string(transducer_idx);
         }
 
-        else if constexpr (std::is_same_v<
-                               T, mitl2gta::transducer::
-                                      on_epsilon_node_values_t>) {
-          return "epsilon_event" + std::to_string(transducer_idx);
-        }
-
         else {
           throw std::runtime_error("Incomplete visitor");
         }
