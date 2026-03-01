@@ -29,23 +29,6 @@ std::set<mitl2gta::memory::memory_id_t> active_memory_on_cond(
         if constexpr (std::is_same_v<T, mitl2gta::transducer::on_epsilon_t>) {
           return std::set<mitl2gta::memory::memory_id_t>();
         }
-
-        if constexpr (std::is_same_v<
-                          T,
-                          mitl2gta::transducer::on_epsilon_node_values_t>) {
-          std::set<mitl2gta::memory::memory_id_t> res;
-          for (auto const &[id, value] : arg.id_to_value) {
-            mitl2gta::boolean::expression_t const expr =
-                mitl2gta::compilation::expression_for_predictor(
-                    id, node_to_truth_value_predictor, placeholder_memory);
-
-            std::set<mitl2gta::memory::memory_id_t> const active_ids =
-                mitl2gta::boolean::ids_in_expr(expr);
-            res.insert(active_ids.begin(), active_ids.end());
-          }
-          return res;
-        }
-
         if constexpr (std::is_same_v<T,
                                      mitl2gta::transducer::on_node_values_t>) {
           std::set<mitl2gta::memory::memory_id_t> res;
@@ -151,9 +134,7 @@ std::set<mitl2gta::memory::memory_id_t> active_memory(
 bool has_epsilon_transition(
     mitl2gta::transducer::transducer_t const &transducer) {
   for (mitl2gta::transducer::edge_t const &edge : transducer.edges) {
-    if (std::holds_alternative<mitl2gta::transducer::on_epsilon_t>(edge.on()) ||
-        std::holds_alternative<mitl2gta::transducer::on_epsilon_node_values_t>(
-            edge.on())) {
+    if (std::holds_alternative<mitl2gta::transducer::on_epsilon_t>(edge.on())) {
       return true;
     }
   }
