@@ -429,15 +429,15 @@ compiled_upper_bounded_until_t::generate_truth_value_predictor(
 
   mitl2gta::transducer::edge_t const e2(
       s1.id(), s1.id(), on_node_values_t{{{rchild(), node_value_t::FALSE}}},
-      {provided_memory_value_t{p_until_q.next_p_until_q_truth_value,
+      {provided_memory_value_t{p_until_q.p_until_q_truth_value,
                                mitl2gta::sharer::SHARER_FALSE_VAL}},
       {set_node_value_t{_id, node_value_t::FALSE}}, {});
 
   mitl2gta::transducer::edge_t const e3(
       s1.id(), s1.id(),
       on_node_values_t{
-          {{lchild(), node_value_t::TRUE}, {rchild(), node_value_t::FALSE}}},
-      {provided_memory_value_t{p_until_q.next_p_until_q_truth_value,
+          {{rchild(), node_value_t::FALSE}}},
+      {provided_memory_value_t{p_until_q.p_until_q_truth_value,
                                mitl2gta::sharer::SHARER_TRUE_VAL}},
       {set_node_value_t{_id, node_value_t::TRUE}},
       {clock_abs_val_in_interval_t{first_witness_clk, interval()}});
@@ -445,21 +445,13 @@ compiled_upper_bounded_until_t::generate_truth_value_predictor(
   mitl2gta::transducer::edge_t const e4(
       s1.id(), s1.id(),
       on_node_values_t{
-          {{lchild(), node_value_t::TRUE}, {rchild(), node_value_t::FALSE}}},
-      {provided_memory_value_t{p_until_q.next_p_until_q_truth_value,
+          {{rchild(), node_value_t::FALSE}}},
+      {provided_memory_value_t{p_until_q.p_until_q_truth_value,
                                mitl2gta::sharer::SHARER_TRUE_VAL}},
       {set_node_value_t{_id, node_value_t::FALSE}},
       {clock_abs_val_not_in_interval_t{first_witness_clk, interval()}});
 
-  mitl2gta::transducer::edge_t const e5(
-      s1.id(), s1.id(),
-      on_node_values_t{
-          {{lchild(), node_value_t::FALSE}, {rchild(), node_value_t::FALSE}}},
-      {provided_memory_value_t{p_until_q.next_p_until_q_truth_value,
-                               mitl2gta::sharer::SHARER_TRUE_VAL}},
-      {set_node_value_t{_id, node_value_t::FALSE}}, {});
-
-  mitl2gta::transducer::transducer_t t{{s1}, {e1, e2, e3, e4, e5}};
+  mitl2gta::transducer::transducer_t t{{s1}, {e1, e2, e3, e4}};
 
   return mitl2gta::compilation::predicted_by_transducer_t{t};
 }
