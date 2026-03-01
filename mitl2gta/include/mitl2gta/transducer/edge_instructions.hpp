@@ -59,6 +59,11 @@ struct clock_val_greater_than {
   mitl2gta::extended_integer_t value;
 };
 
+struct clock_val_greater_equals_t {
+  mitl2gta::clock::clock_id_t clk_id;
+  mitl2gta::extended_integer_t value;
+};
+
 struct clock_val_less_than_t {
   mitl2gta::clock::clock_id_t clk_id;
   mitl2gta::extended_integer_t value;
@@ -86,6 +91,7 @@ using gta_program_t =
                  mitl2gta::transducer::clock_abs_val_not_in_interval_t,
                  mitl2gta::transducer::clock_val_equal_to_t,
                  mitl2gta::transducer::clock_val_greater_than,
+                 mitl2gta::transducer::clock_val_greater_equals_t,
                  mitl2gta::transducer::clock_val_less_equals_t,
                  mitl2gta::transducer::clock_val_less_than_t,
                  mitl2gta::transducer::release_reset_clock_t,
@@ -103,9 +109,16 @@ struct on_node_values_t {
       id_to_value;
 };
 
+struct on_epsilon_node_values_t {
+  std::vector<std::pair<mitl2gta::compilation::node_id_t,
+                        enum mitl2gta::transducer::node_value_t>>
+      id_to_value;
+};
+
 struct on_epsilon_t {};
 
 using transition_on_t = std::variant<mitl2gta::transducer::on_node_values_t,
+                                     mitl2gta::transducer::on_epsilon_node_values_t,
                                      mitl2gta::transducer::on_epsilon_t>;
 
 struct set_node_value_t {
