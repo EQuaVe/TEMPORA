@@ -295,7 +295,7 @@ compiled_timed_until_t::generate_truth_value_predictor(
     all_progs.emplace_back(
         general_until_prog_t{first_else2, k, node_value_t::FALSE});
 
-    if (k != locations_1.size() - 1) {
+  if (k != locations_1.size() - 1) {
       std::vector<mitl2gta::transducer::gta_program_t> second_else1({
           clock_abs_val_less_than_interval_t{y_clks.at(k - 1), interval()},
           clock_abs_val_greater_than_interval_t{y, interval()},
@@ -350,24 +350,39 @@ compiled_timed_until_t::generate_truth_value_predictor(
           {set_node_value_t{id(), val}}, gta_prog));
     }
 
+    //Defines the transitions from (k,2)
     for (auto const &prog : all_progs) {
       std::vector<mitl2gta::transducer::gta_program_t> gta_prog = prog.program;
       int kprime = prog.next_state_index;
       node_value_t val = prog.output;
 
-      edges.emplace_back(mitl2gta::transducer::edge_t(
+    // Special case for the state (1,2) from which we add additional guards
+    // to ensure that we do not see the last witness
+    if (k==1)
+    {
+        //Not the last witness 
+
+        //Lines 14-25 of Algorithm2  
+        // (1,2) - -> (1,2)  OR (2,2)    
+        edges.emplace_back(mitl2gta::transducer::edge_t(
           locations_2.at(k).id(), locations_2.at(kprime).id(),
-          {on_node_values_t{{{rchild(), node_value_t::FALSE}}}}, {},
+          on_node_values_t{{{rchild(), node_value_t::FALSE},
+                            {lchild(), node_value_t::TRUE}}},
+          {provided_memory_value_t{p_until_q_sharer.next_p_until_q_truth_value, mitl2gta::sharer::SHARER_TRUE_VAL}},
           {set_node_value_t{id(), val}}, gta_prog));
+        //q is false, so both p and Next (p Until q) have to be true     
 
-      gta_prog.emplace_back(clock_val_equal_to_t{y_clks.at(0), 0});
-      gta_prog.emplace_back(release_reset_clock_t{y_clks.at(0)});
-      gta_prog.emplace_back(
-          clock_val_equal_to_t{y_clks.at(0), mitl2gta::EXTENDED_MINUS_INF});
+          gta_prog.emplace_back(clock_val_equal_to_t{y_clks.at(0), 0});
+          gta_prog.emplace_back(release_reset_clock_t{y_clks.at(0)});
+          gta_prog.emplace_back(
+            clock_val_equal_to_t{y_clks.at(0), mitl2gta::EXTENDED_MINUS_INF});
 
-      if (kprime == 1) {
-        if (val == mitl2gta::transducer::node_value_t::TRUE) {
-          edges.emplace_back(mitl2gta::transducer::edge_t(
+          if (kprime == 1) {
+ 
+          // (1,2) - -> (0,1)
+          // But not the last witness          
+          // Line 29 of Algorithm 2
+            edges.emplace_back(mitl2gta::transducer::edge_t(
               locations_2.at(k).id(), locations_1.at(0).id(),
               {on_node_values_t{{{lchild(), node_value_t::TRUE},
                                  {rchild(), node_value_t::TRUE}}}},
@@ -375,13 +390,75 @@ compiled_timed_until_t::generate_truth_value_predictor(
                   p_until_q_sharer.next_p_until_q_truth_value,
                   mitl2gta::sharer::SHARER_TRUE_VAL}}},
               {set_node_value_t{id(), val}}, gta_prog));
-        } else {
-          edges.emplace_back(mitl2gta::transducer::edge_t(
-              locations_2.at(k).id(), locations_1.at(0).id(),
-              {on_node_values_t{{{rchild(), node_value_t::FALSE}}}}, {},
-              {set_node_value_t{id(), val}}, gta_prog));
+            //q has to be true as we just checked y_1 ==0     
+            //Then, since this q is not the last witness (WE ALREADY CHECKED THIS ABOVE in lines 10-11), this also means p is true and X(p U q) is true     
+            } 
+        
+
+          else {
+
+            std::vector<mitl2gta::clock::clock_id_t> shiftx_clks;
+            std::vector<mitl2gta::clock::clock_id_t> shifty_clks;
+            for (std::size_t i = 0; i < kprime; i++) {
+              shiftx_clks.emplace_back(x_clks.at(i));
+              shifty_clks.emplace_back(y_clks.at(i));
+            }
+
+            gta_prog.emplace_back(shift_clocks_backward_t{shiftx_clks});
+            gta_prog.emplace_back(shift_clocks_backward_t{shifty_clks});
+
+            // Line 31 of Algorithm 2
+            kprime--;
+
+          // (1,2) - -> (1,1)
+          // Combining red and black transitions
+          // Line 34 of Algorithm 2
+            edges.emplace_back(mitl2gta::transducer::edge_t(
+                locations_2.at(k).id(), locations_1.at(kprime).id(),
+              on_node_values_t{{{rchild(), node_value_t::TRUE},
+                            {lchild(), node_value_t::TRUE}}},
+              {provided_memory_value_t{p_until_q_sharer.next_p_until_q_truth_value, mitl2gta::sharer::SHARER_TRUE_VAL}},
+            {set_node_value_t{id(), val}}, gta_prog));
+            //q has to be true as we just checked y_1 ==0     
+            //Then, since this q is not the last witness, this also means p is true and X(p U q) is true     
+
+            gta_prog.emplace_back(clock_val_equal_to_t{x_clks.at(0), 0});
+            gta_prog.emplace_back(release_reset_clock_t{x_clks.at(0)});
+            gta_prog.emplace_back(
+              clock_val_equal_to_t{x_clks.at(0), mitl2gta::EXTENDED_MINUS_INF});
+
+          // (1,2) - -> (1,2)
+          // Combining red, black and blue transitions
+          // Line 35 of Algorithm 2
+            edges.emplace_back(mitl2gta::transducer::edge_t(
+                locations_2.at(k).id(), locations_2.at(kprime).id(),
+              on_node_values_t{{{rchild(), node_value_t::TRUE},
+                            {lchild(), node_value_t::TRUE}}},
+              {provided_memory_value_t{p_until_q_sharer.next_p_until_q_truth_value, mitl2gta::sharer::SHARER_TRUE_VAL}},
+                {set_node_value_t{id(), val}}, gta_prog));
+            //q has to be true as we just checked y_1 ==0     
+            //Then, since this q is not the last witness, this also means p is true and X(p U q) is true     
         }
-      } else {
+    }
+
+    // Covers the cases for the state (k,2) when k > 1
+    // Not possible to see the last witness form these states, so we do not check the value of p and X(p U q) 
+    else{
+      
+      // (k,2) - -> (k',2)
+      // Line 34 of Algorithm 2
+      edges.emplace_back(mitl2gta::transducer::edge_t(
+          locations_2.at(k).id(), locations_2.at(kprime).id(),
+          {on_node_values_t{{{rchild(), node_value_t::FALSE}}}}, {},
+          {set_node_value_t{id(), val}}, gta_prog));
+
+            
+    // Line 28 of Algorithm 2
+      gta_prog.emplace_back(clock_val_equal_to_t{y_clks.at(0), 0});
+      gta_prog.emplace_back(release_reset_clock_t{y_clks.at(0)});
+      gta_prog.emplace_back(
+          clock_val_equal_to_t{y_clks.at(0), mitl2gta::EXTENDED_MINUS_INF});
+
         std::vector<mitl2gta::clock::clock_id_t> shiftx_clks;
         std::vector<mitl2gta::clock::clock_id_t> shifty_clks;
         for (std::size_t i = 0; i < kprime; i++) {
@@ -389,11 +466,17 @@ compiled_timed_until_t::generate_truth_value_predictor(
           shifty_clks.emplace_back(y_clks.at(i));
         }
 
+      // Adding clock shift operation to gta_prog
         gta_prog.emplace_back(shift_clocks_backward_t{shiftx_clks});
         gta_prog.emplace_back(shift_clocks_backward_t{shifty_clks});
 
+        // Line 31 of Algorithm 2
+        kprime--;
+
+      // (k,2) - -> (k'-1,1)
+      // Line 34 of Algorithm 2
         edges.emplace_back(mitl2gta::transducer::edge_t(
-            locations_2.at(k).id(), locations_1.at(kprime - 1).id(),
+            locations_2.at(k).id(), locations_1.at(kprime).id(),
             {on_node_values_t{{{rchild(), node_value_t::TRUE}}}}, {},
             {set_node_value_t{id(), val}}, gta_prog));
 
@@ -402,8 +485,10 @@ compiled_timed_until_t::generate_truth_value_predictor(
         gta_prog.emplace_back(
             clock_val_equal_to_t{x_clks.at(0), mitl2gta::EXTENDED_MINUS_INF});
 
+      // (k,2) - -> (k'-1,2)
+      // Line 35 of Algorithm 2
         edges.emplace_back(mitl2gta::transducer::edge_t(
-            locations_2.at(k).id(), locations_2.at(kprime - 1).id(),
+            locations_2.at(k).id(), locations_2.at(kprime).id(),
             {on_node_values_t{{{rchild(), node_value_t::TRUE}}}}, {},
             {set_node_value_t{id(), val}}, gta_prog));
       }
