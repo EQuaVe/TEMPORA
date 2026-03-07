@@ -259,23 +259,6 @@ compiled_timed_until_t::generate_truth_value_predictor(
           clock_val_equal_to_t{y_clks.at(0), mitl2gta::EXTENDED_MINUS_INF},
     }));      
 
-    edges.emplace_back(mitl2gta::transducer::edge_t(
-              locations_2.at(1).id(), locations_1.at(0).id(),
-              on_node_values_t{{{rchild(), node_value_t::TRUE},
-                            {lchild(), node_value_t::TRUE}}},
-              {provided_memory_value_t{p_until_q_sharer.next_p_until_q_truth_value, mitl2gta::sharer::SHARER_FALSE_VAL}},
-              {set_node_value_t{id(), node_value_t::FALSE}}, last_witness_prog));
-
-
-
-        // Case 2: q && p && !X(p U q)  
-        edges.emplace_back(mitl2gta::transducer::edge_t(
-              locations_2.at(k).id(), locations_1.at(0).id(),
-              on_node_values_t{{{rchild(), node_value_t::TRUE},
-                            {lchild(), node_value_t::TRUE}}},
-              {provided_memory_value_t{p_until_q_sharer.next_p_until_q_truth_value, mitl2gta::sharer::SHARER_FALSE_VAL}},
-              {set_node_value_t{id(), node_value_t::FALSE}}, last_witness_prog));
-
 
   for (int k = 1; k < locations_1.size(); k++) {
     std::vector<general_until_prog_t> all_progs;
