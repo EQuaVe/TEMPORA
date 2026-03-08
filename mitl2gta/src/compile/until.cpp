@@ -134,7 +134,9 @@ compiled_timed_until_t::generate_truth_value_predictor(
         mitl2gta::gta::gta_clock_type_t::PROPHECY));
   }
 
+  //Vector of states for (k,1)
   std::vector<mitl2gta::transducer::state_t> locations_1;
+  //Vector of states for (k,2)
   std::vector<mitl2gta::transducer::state_t> locations_2;
 
   for (int i = 0; i <= num_clks; i++) {
@@ -156,11 +158,17 @@ compiled_timed_until_t::generate_truth_value_predictor(
 
   std::vector<mitl2gta::transducer::edge_t> edges;
 
+  // Defining transitions from state (0,1)
+
+  //Line 2 of Algorithm 2
+  // !p -> False
   edges.emplace_back(mitl2gta::transducer::edge_t(
       locations_1.at(0).id(), locations_1.at(0).id(),
       on_node_values_t{{{lchild(), node_value_t::FALSE}}}, {},
       {set_node_value_t{id(), node_value_t::FALSE}}, {}));
 
+  //Line 2 of Algorithm 2
+  // !X(pUq) -> False
   edges.emplace_back(mitl2gta::transducer::edge_t(
       locations_1.at(0).id(), locations_1.at(0).id(),
       on_node_values_t{{{lchild(), node_value_t::TRUE}}},
@@ -168,6 +176,8 @@ compiled_timed_until_t::generate_truth_value_predictor(
                                mitl2gta::sharer::SHARER_FALSE_VAL}},
       {set_node_value_t{id(), node_value_t::FALSE}}, {}));
 
+  //Line 3 of Algorithm 2
+  // p  &&  X(pUq) && |x| in I -> True
   edges.emplace_back(mitl2gta::transducer::edge_t(
       locations_1.at(0).id(), locations_1.at(0).id(),
       on_node_values_t{{{lchild(), node_value_t::TRUE}}},
@@ -176,6 +186,8 @@ compiled_timed_until_t::generate_truth_value_predictor(
       {set_node_value_t{id(), node_value_t::TRUE}},
       {clock_abs_val_in_interval_t{x, interval()}}));
 
+  //Line 3 of Algorithm 2
+  // p  &&  X(pUq) && |y| in I -> True
   edges.emplace_back(mitl2gta::transducer::edge_t(
       locations_1.at(0).id(), locations_1.at(0).id(),
       on_node_values_t{{{lchild(), node_value_t::TRUE}}},
@@ -184,6 +196,9 @@ compiled_timed_until_t::generate_truth_value_predictor(
       {set_node_value_t{id(), node_value_t::TRUE}},
       {clock_abs_val_in_interval_t{y, interval()}}));
 
+  //Line 4 of Algorithm 2
+  // p  &&  X(pUq), but |x| > I -> False
+  // Earliest witness is after the interval
   edges.emplace_back(mitl2gta::transducer::edge_t(
       locations_1.at(0).id(), locations_1.at(0).id(),
       on_node_values_t{{{lchild(), node_value_t::TRUE}}},
@@ -192,6 +207,9 @@ compiled_timed_until_t::generate_truth_value_predictor(
       {set_node_value_t{id(), node_value_t::FALSE}},
       {clock_abs_val_greater_than_interval_t{x, interval()}}));
 
+  //Line 4 of Algorithm 2
+  // p  &&  X(pUq), but |y| < I -> False
+  // Latest witness is before the interval
   edges.emplace_back(mitl2gta::transducer::edge_t(
       locations_1.at(0).id(), locations_1.at(0).id(),
       on_node_values_t{{{lchild(), node_value_t::TRUE}}},
@@ -200,6 +218,21 @@ compiled_timed_until_t::generate_truth_value_predictor(
       {set_node_value_t{id(), node_value_t::FALSE}},
       {clock_abs_val_less_than_interval_t{y, interval()}}));
 
+  //Difficult point 
+  //p  &&  X(pUq), and
+  // Earliest witness is before the interval
+  // Latest witness is after the interval
+  // There could be a witness in the interval
+
+  // We start a new pair of clocks 
+  // x1 stores the time till the last witness before the end of the interval
+  // y1 stores the time till the first witness after the end of the interval
+
+
+  // Lines 5-8 of Algorithm 2
+  // The following transition checks all the preconditions && 
+  // |x_1| in I, but |y_1| > I 
+  // Output True
   edges.emplace_back(mitl2gta::transducer::edge_t(
       locations_1.at(0).id(), locations_1.at(1).id(),
       on_node_values_t{{{lchild(), node_value_t::TRUE}}},
@@ -216,8 +249,12 @@ compiled_timed_until_t::generate_truth_value_predictor(
           clock_val_greater_than{y_clks.at(0), mitl2gta::EXTENDED_MINUS_INF},
       }));
 
+  // Lines 5-8 of Algorithm 2
+  // The following transition checks all the preconditions && 
+  // |x_1| < I and |y_1| > I 
+  // Output False
 
-      edges.emplace_back(mitl2gta::transducer::edge_t(
+  edges.emplace_back(mitl2gta::transducer::edge_t(
       locations_1.at(0).id(), locations_1.at(1).id(),
       on_node_values_t{{{lchild(), node_value_t::TRUE}}},
       {provided_memory_value_t{p_until_q_sharer.next_p_until_q_truth_value,
@@ -234,6 +271,11 @@ compiled_timed_until_t::generate_truth_value_predictor(
       }));
 
 
+  // Lines 10-11 of Algorithm 2
+  // Takes care of the special case when y_1 = y, and we are seeing the last witness 
+  // In this case, the value of y that we are reading is incorrect - it is the value after it is released and invalidated, while we should be reading the pre-value. In any case,
+  // since this is the last witness, it satisfies !(p && X(p U q))
+  // Output False
       
   // Case 1: q ∧ ¬p
   edges.emplace_back(mitl2gta::transducer::edge_t(
@@ -260,7 +302,11 @@ compiled_timed_until_t::generate_truth_value_predictor(
     }));      
 
 
+
   for (int k = 1; k < locations_1.size(); k++) {
+
+  // Next, we generate all the gta_programs that will be used on the transitions of this automaton in an array called all_progs    
+
     std::vector<general_until_prog_t> all_progs;
 
     std::vector<mitl2gta::transducer::gta_program_t> first_if1({
@@ -271,6 +317,11 @@ compiled_timed_until_t::generate_truth_value_predictor(
     all_progs.emplace_back(
         general_until_prog_t{first_if1, k, node_value_t::TRUE});
 
+  // Lines 14-15 of Algorithm 2
+  // Takes care of the case when the earliest active witness is before the interval, i.e., (x_k < I) and
+  // the latest active witness is in the interval i.e., (y_k < I),
+  // Output True
+
     std::vector<mitl2gta::transducer::gta_program_t> first_if2({
         clock_abs_val_in_interval_t{y_clks.at(k - 1), interval()},
         clock_abs_val_less_than_interval_t{x_clks.at(k - 1), interval()},
@@ -279,6 +330,10 @@ compiled_timed_until_t::generate_truth_value_predictor(
     all_progs.emplace_back(
         general_until_prog_t{first_if2, k, node_value_t::TRUE});
 
+  // Lines 17-18 of Algorithm 2
+  // Takes care of the case when the latest active witness is before the interval, i.e., (y_k < I),
+  // but the latest witness is in the interval i.e., (|y| in I),
+  // Output True
     std::vector<mitl2gta::transducer::gta_program_t> first_else1({
         clock_abs_val_less_than_interval_t{y_clks.at(k - 1), interval()},
         clock_abs_val_in_interval_t{y, interval()},
@@ -287,6 +342,10 @@ compiled_timed_until_t::generate_truth_value_predictor(
     all_progs.emplace_back(
         general_until_prog_t{first_else1, k, node_value_t::TRUE});
 
+  // Lines 17-18 of Algorithm 2
+  // The latest active witness is before the interval, i.e., (y_k < I),
+  // and the latest witness is also before the interval i.e., (y < I),
+  // Output FALSE
     std::vector<mitl2gta::transducer::gta_program_t> first_else2({
         clock_abs_val_less_than_interval_t{y_clks.at(k - 1), interval()},
         clock_abs_val_less_than_interval_t{y, interval()},
@@ -295,7 +354,15 @@ compiled_timed_until_t::generate_truth_value_predictor(
     all_progs.emplace_back(
         general_until_prog_t{first_else2, k, node_value_t::FALSE});
 
-  if (k != locations_1.size() - 1) {
+  // Lines 21-23 of Algorithm 2
+  // The latest active witness is before the interval, i.e., (y_k < I),
+  // and the latest witness is after the interval i.e., (y > I),
+
+
+  // Activate new pair of clocks x_{k+1}, y_{k+1}
+  // Check  x_{k+1} in I, but y_{k+1} > I
+  // Output TRUE
+    if (k != locations_1.size() - 1) {
       std::vector<mitl2gta::transducer::gta_program_t> second_else1({
           clock_abs_val_less_than_interval_t{y_clks.at(k - 1), interval()},
           clock_abs_val_greater_than_interval_t{y, interval()},
@@ -307,6 +374,9 @@ compiled_timed_until_t::generate_truth_value_predictor(
       all_progs.emplace_back(
           general_until_prog_t{second_else1, k + 1, node_value_t::TRUE});
 
+  // Activate new pair of clocks x_{k+1}, y_{k+1}
+  // Check  x_{k+1} < I and y_{k+1} > I
+  // Output FALSE
       std::vector<mitl2gta::transducer::gta_program_t> second_else2({
           clock_abs_val_less_than_interval_t{y_clks.at(k - 1), interval()},
           clock_abs_val_greater_than_interval_t{y, interval()},
@@ -320,9 +390,20 @@ compiled_timed_until_t::generate_truth_value_predictor(
     }
 
     for (auto const &prog : all_progs) {
+
       std::vector<mitl2gta::transducer::gta_program_t> gta_prog = prog.program;
       int kprime = prog.next_state_index;
       node_value_t val = prog.output;
+
+      //We now add the transitions from each state (k,l)
+      // The program defined above provides three attributes for the transitions
+      // 1. program - The gta program associated with the transition  
+      // 2. kprime - The value of k after the execution of lines 10-25. This value implies the target state - whether it should go to k itself or k+1 (or -1 when we are in location2)
+      // 3. val - The associated output of the transition   
+
+      // In the first for loop below, we define the transitions from states (k,1), while the transitions from (k,2) will be defined in a different for-loop below.
+
+      //We now add the transition from (k,1)
 
       // (k,1) -!q -> (k',1)
       // Line 26 of Algorithm 2
@@ -474,6 +555,7 @@ compiled_timed_until_t::generate_truth_value_predictor(
         kprime--;
 
       // (k,2) - -> (k'-1,1)
+      // k' is the new k after lines 14-31
       // Line 34 of Algorithm 2
         edges.emplace_back(mitl2gta::transducer::edge_t(
             locations_2.at(k).id(), locations_1.at(kprime).id(),
@@ -486,6 +568,7 @@ compiled_timed_until_t::generate_truth_value_predictor(
             clock_val_equal_to_t{x_clks.at(0), mitl2gta::EXTENDED_MINUS_INF});
 
       // (k,2) - -> (k'-1,2)
+      // k' is the new k after lines 14-31
       // Line 35 of Algorithm 2
         edges.emplace_back(mitl2gta::transducer::edge_t(
             locations_2.at(k).id(), locations_2.at(kprime).id(),
