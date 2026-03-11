@@ -217,6 +217,26 @@ compiled_timed_until_t::generate_truth_value_predictor(
       }));
 
   edges.emplace_back(mitl2gta::transducer::edge_t(
+      locations_2.at(1).id(), locations_1.at(0).id(),
+      on_node_values_t{
+          {{lchild(), node_value_t::FALSE}, {rchild(), node_value_t::TRUE}}},
+      {}, {set_node_value_t{id(), node_value_t::FALSE}},
+      {clock_val_equal_to_t{y_clks.at(0), 0},
+       release_reset_clock_t{y_clks.at(0)},
+       clock_val_equal_to_t{y_clks.at(0), mitl2gta::EXTENDED_MINUS_INF}}));
+
+  edges.emplace_back(mitl2gta::transducer::edge_t(
+      locations_2.at(1).id(), locations_1.at(0).id(),
+      on_node_values_t{
+          {{lchild(), node_value_t::TRUE}, {rchild(), node_value_t::TRUE}}},
+      {provided_memory_value_t{p_until_q_sharer.next_p_until_q_truth_value,
+                               mitl2gta::sharer::SHARER_FALSE_VAL}},
+      {set_node_value_t{id(), node_value_t::FALSE}},
+      {clock_val_equal_to_t{y_clks.at(0), 0},
+       release_reset_clock_t{y_clks.at(0)},
+       clock_val_equal_to_t{y_clks.at(0), mitl2gta::EXTENDED_MINUS_INF}}));
+
+  edges.emplace_back(mitl2gta::transducer::edge_t(
       locations_1.at(0).id(), locations_1.at(1).id(),
       on_node_values_t{{{lchild(), node_value_t::TRUE}}},
       {provided_memory_value_t{p_until_q_sharer.next_p_until_q_truth_value,
@@ -298,7 +318,10 @@ compiled_timed_until_t::generate_truth_value_predictor(
 
       edges.emplace_back(mitl2gta::transducer::edge_t(
           locations_1.at(k).id(), locations_1.at(kprime).id(),
-          {on_node_values_t{}}, {}, {set_node_value_t{id(), val}}, gta_prog));
+          {on_node_values_t{{{lchild(), node_value_t::TRUE}}}},
+          {provided_memory_value_t{p_until_q_sharer.next_p_until_q_truth_value,
+                                   mitl2gta::sharer::SHARER_TRUE_VAL}},
+          {set_node_value_t{id(), val}}, gta_prog));
 
       gta_prog.emplace_back(clock_val_equal_to_t{x_clks.at(0), 0});
       gta_prog.emplace_back(release_reset_clock_t{x_clks.at(0)});
@@ -307,18 +330,24 @@ compiled_timed_until_t::generate_truth_value_predictor(
 
       edges.emplace_back(mitl2gta::transducer::edge_t(
           locations_1.at(k).id(), locations_2.at(kprime).id(),
-          {on_node_values_t{{{rchild(), node_value_t::TRUE}}}}, {},
+          {on_node_values_t{{{lchild(), node_value_t::TRUE},
+                             {rchild(), node_value_t::TRUE}}}},
+          {provided_memory_value_t{p_until_q_sharer.next_p_until_q_truth_value,
+                                   mitl2gta::sharer::SHARER_TRUE_VAL}},
           {set_node_value_t{id(), val}}, gta_prog));
     }
 
     for (auto const &prog : all_progs) {
       std::vector<mitl2gta::transducer::gta_program_t> gta_prog = prog.program;
-      int kprime = prog.next_state_index;
+      int const kprime = prog.next_state_index;
       node_value_t val = prog.output;
 
       edges.emplace_back(mitl2gta::transducer::edge_t(
           locations_2.at(k).id(), locations_2.at(kprime).id(),
-          {on_node_values_t{{{rchild(), node_value_t::FALSE}}}}, {},
+          {on_node_values_t{{{lchild(), node_value_t::TRUE},
+                             {rchild(), node_value_t::FALSE}}}},
+          {provided_memory_value_t{p_until_q_sharer.next_p_until_q_truth_value,
+                                   mitl2gta::sharer::SHARER_TRUE_VAL}},
           {set_node_value_t{id(), val}}, gta_prog));
 
       gta_prog.emplace_back(clock_val_equal_to_t{y_clks.at(0), 0});
@@ -327,21 +356,14 @@ compiled_timed_until_t::generate_truth_value_predictor(
           clock_val_equal_to_t{y_clks.at(0), mitl2gta::EXTENDED_MINUS_INF});
 
       if (kprime == 1) {
-        if (val == mitl2gta::transducer::node_value_t::TRUE) {
-          edges.emplace_back(mitl2gta::transducer::edge_t(
-              locations_2.at(k).id(), locations_1.at(0).id(),
-              {on_node_values_t{{{lchild(), node_value_t::TRUE},
-                                 {rchild(), node_value_t::TRUE}}}},
-              {{provided_memory_value_t{
-                  p_until_q_sharer.next_p_until_q_truth_value,
-                  mitl2gta::sharer::SHARER_TRUE_VAL}}},
-              {set_node_value_t{id(), val}}, gta_prog));
-        } else {
-          edges.emplace_back(mitl2gta::transducer::edge_t(
-              locations_2.at(k).id(), locations_1.at(0).id(),
-              {on_node_values_t{{{rchild(), node_value_t::FALSE}}}}, {},
-              {set_node_value_t{id(), val}}, gta_prog));
-        }
+        edges.emplace_back(mitl2gta::transducer::edge_t(
+            locations_2.at(k).id(), locations_1.at(0).id(),
+            {on_node_values_t{{{lchild(), node_value_t::TRUE},
+                               {rchild(), node_value_t::TRUE}}}},
+            {provided_memory_value_t{
+                p_until_q_sharer.next_p_until_q_truth_value,
+                mitl2gta::sharer::SHARER_TRUE_VAL}},
+            {set_node_value_t{id(), val}}, gta_prog));
       } else {
         std::vector<mitl2gta::clock::clock_id_t> shiftx_clks;
         std::vector<mitl2gta::clock::clock_id_t> shifty_clks;
@@ -355,7 +377,11 @@ compiled_timed_until_t::generate_truth_value_predictor(
 
         edges.emplace_back(mitl2gta::transducer::edge_t(
             locations_2.at(k).id(), locations_1.at(kprime - 1).id(),
-            {on_node_values_t{{{rchild(), node_value_t::TRUE}}}}, {},
+            {on_node_values_t{{{lchild(), node_value_t::TRUE},
+                               {rchild(), node_value_t::TRUE}}}},
+            {provided_memory_value_t{
+                p_until_q_sharer.next_p_until_q_truth_value,
+                mitl2gta::sharer::SHARER_TRUE_VAL}},
             {set_node_value_t{id(), val}}, gta_prog));
 
         gta_prog.emplace_back(clock_val_equal_to_t{x_clks.at(0), 0});
@@ -365,7 +391,11 @@ compiled_timed_until_t::generate_truth_value_predictor(
 
         edges.emplace_back(mitl2gta::transducer::edge_t(
             locations_2.at(k).id(), locations_2.at(kprime - 1).id(),
-            {on_node_values_t{{{rchild(), node_value_t::TRUE}}}}, {},
+            {on_node_values_t{{{lchild(), node_value_t::TRUE},
+                               {rchild(), node_value_t::TRUE}}}},
+            {provided_memory_value_t{
+                p_until_q_sharer.next_p_until_q_truth_value,
+                mitl2gta::sharer::SHARER_TRUE_VAL}},
             {set_node_value_t{id(), val}}, gta_prog));
       }
     }
@@ -377,10 +407,7 @@ compiled_timed_until_t::generate_truth_value_predictor(
     states.emplace_back(s);
   }
 
-  for (int i = 0; i < locations_2.size(); i++) {
-    if (i == 0) {
-      continue;
-    }
+  for (int i = 1; i < locations_2.size(); i++) {
     states.emplace_back(locations_2.at(i));
   }
 
