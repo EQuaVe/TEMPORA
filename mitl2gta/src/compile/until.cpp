@@ -316,24 +316,21 @@ compiled_timed_until_t::generate_truth_value_predictor(
       int kprime = prog.next_state_index;
       node_value_t val = prog.output;
 
-      edges.emplace_back(mitl2gta::transducer::edge_t(
-          locations_1.at(k).id(), locations_1.at(kprime).id(),
-          {on_node_values_t{{{lchild(), node_value_t::TRUE}}}},
-          {provided_memory_value_t{p_until_q_sharer.next_p_until_q_truth_value,
-                                   mitl2gta::sharer::SHARER_TRUE_VAL}},
-          {set_node_value_t{id(), val}}, gta_prog));
-
       // (k,1) -!q -> (k',1)
       edges.emplace_back(mitl2gta::transducer::edge_t(
           locations_1.at(k).id(), locations_1.at(kprime).id(),
-                    {on_node_values_t{{{rchild(), node_value_t::FALSE}}}}, {},
-                    {set_node_value_t{id(), val}}, gta_prog));
+          {on_node_values_t{{{lchild(), node_value_t::TRUE}, {rchild(), node_value_t::FALSE}}}},
+          {provided_memory_value_t{p_until_q_sharer.next_p_until_q_truth_value,
+                                   mitl2gta::sharer::SHARER_TRUE_VAL}},
+          {set_node_value_t{id(), val}}, gta_prog));
 
       // (k,1) -q-> (k',1)
       // But not the last q at the timestamp
       edges.emplace_back(mitl2gta::transducer::edge_t(
           locations_1.at(k).id(), locations_1.at(kprime).id(),
-                    {on_node_values_t{{{rchild(), node_value_t::TRUE}}}}, {},
+          {on_node_values_t{{{lchild(), node_value_t::TRUE}, {rchild(), node_value_t::TRUE}}}},
+          {provided_memory_value_t{p_until_q_sharer.next_p_until_q_truth_value,
+                                   mitl2gta::sharer::SHARER_TRUE_VAL}},
           {set_node_value_t{id(), val}}, gta_prog));
 
       gta_prog.emplace_back(clock_val_equal_to_t{x_clks.at(0), 0});
