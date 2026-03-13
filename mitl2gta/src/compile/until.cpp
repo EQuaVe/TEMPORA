@@ -323,6 +323,19 @@ compiled_timed_until_t::generate_truth_value_predictor(
                                    mitl2gta::sharer::SHARER_TRUE_VAL}},
           {set_node_value_t{id(), val}}, gta_prog));
 
+      // (k,1) -!q -> (k',1)
+      edges.emplace_back(mitl2gta::transducer::edge_t(
+          locations_1.at(k).id(), locations_1.at(kprime).id(),
+                    {on_node_values_t{{{rchild(), node_value_t::FALSE}}}}, {},
+                    {set_node_value_t{id(), val}}, gta_prog));
+
+      // (k,1) -q-> (k',1)
+      // But not the last q at the timestamp
+      edges.emplace_back(mitl2gta::transducer::edge_t(
+          locations_1.at(k).id(), locations_1.at(kprime).id(),
+                    {on_node_values_t{{{rchild(), node_value_t::TRUE}}}}, {},
+          {set_node_value_t{id(), val}}, gta_prog));
+
       gta_prog.emplace_back(clock_val_equal_to_t{x_clks.at(0), 0});
       gta_prog.emplace_back(release_reset_clock_t{x_clks.at(0)});
       gta_prog.emplace_back(
