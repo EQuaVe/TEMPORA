@@ -42,6 +42,12 @@ protected:
   mitl2gta::interval_bound_t _upper_bound;
 };
 
+// Returns true if both bounds of the interval are open
+inline bool both_bounds_open(const nonempty_interval_t& interval) {
+  return interval.lower_bound().bound_type == OPEN_BOUND &&
+         interval.upper_bound().bound_type == OPEN_BOUND;
+}
+
 inline std::ostream &operator<<(std::ostream &os,
                                 mitl2gta::nonempty_interval_t const &interval) {
   return interval.output(os);

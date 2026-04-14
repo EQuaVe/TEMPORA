@@ -54,9 +54,19 @@ struct clock_val_equal_to_t {
   mitl2gta::extended_integer_t value;
 };
 
+struct clock_val_equal_to_clock_t {
+  mitl2gta::clock::clock_id_t lhs_clk_id;
+  mitl2gta::clock::clock_id_t rhs_clk_id;
+};
+
 struct clock_val_greater_than {
   mitl2gta::clock::clock_id_t clk_id;
   mitl2gta::extended_integer_t value;
+};
+
+struct clock_val_greater_than_clock_t {
+  mitl2gta::clock::clock_id_t lhs_clk_id;
+  mitl2gta::clock::clock_id_t rhs_clk_id;
 };
 
 struct clock_val_greater_equals_t {
@@ -64,14 +74,29 @@ struct clock_val_greater_equals_t {
   mitl2gta::extended_integer_t value;
 };
 
+struct clock_val_greater_equals_clock_t {
+  mitl2gta::clock::clock_id_t lhs_clk_id;
+  mitl2gta::clock::clock_id_t rhs_clk_id;
+};
+
 struct clock_val_less_than_t {
   mitl2gta::clock::clock_id_t clk_id;
   mitl2gta::extended_integer_t value;
 };
 
+struct clock_val_less_than_clock_t {
+  mitl2gta::clock::clock_id_t lhs_clk_id;
+  mitl2gta::clock::clock_id_t rhs_clk_id;
+};
+
 struct clock_val_less_equals_t {
   mitl2gta::clock::clock_id_t clk_id;
   mitl2gta::extended_integer_t value;
+};
+
+struct clock_val_less_equals_clock_t {
+  mitl2gta::clock::clock_id_t lhs_clk_id;
+  mitl2gta::clock::clock_id_t rhs_clk_id;
 };
 
 struct release_reset_clock_t {
@@ -90,10 +115,15 @@ using gta_program_t =
                  mitl2gta::transducer::clock_abs_val_leq_upper_bound_t,
                  mitl2gta::transducer::clock_abs_val_not_in_interval_t,
                  mitl2gta::transducer::clock_val_equal_to_t,
+                 mitl2gta::transducer::clock_val_equal_to_clock_t,
                  mitl2gta::transducer::clock_val_greater_than,
+                 mitl2gta::transducer::clock_val_greater_than_clock_t,
                  mitl2gta::transducer::clock_val_greater_equals_t,
+                 mitl2gta::transducer::clock_val_greater_equals_clock_t,
                  mitl2gta::transducer::clock_val_less_equals_t,
+                 mitl2gta::transducer::clock_val_less_equals_clock_t,
                  mitl2gta::transducer::clock_val_less_than_t,
+                 mitl2gta::transducer::clock_val_less_than_clock_t,
                  mitl2gta::transducer::release_reset_clock_t,
                  mitl2gta::transducer::shift_clocks_backward_t>;
 
