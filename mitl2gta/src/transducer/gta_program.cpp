@@ -47,6 +47,13 @@ gta_program_type_t type(mitl2gta::transducer::gta_program_t const &prog) {
         }
 
         else if constexpr (std::is_same_v<
+                               T,
+                               mitl2gta::transducer::
+                                   clock_val_equal_to_clock_t>) {
+          return gta_program_type_t::GUARD;
+        }
+
+        else if constexpr (std::is_same_v<
                                T, mitl2gta::transducer::
                                       clock_abs_val_less_than_interval_t>) {
           return gta_program_type_t::GUARD;
@@ -77,8 +84,21 @@ gta_program_type_t type(mitl2gta::transducer::gta_program_t const &prog) {
         }
 
         else if constexpr (std::is_same_v<
+                               T,
+                               mitl2gta::transducer::
+                                   clock_val_greater_than_clock_t>) {
+          return gta_program_type_t::GUARD;
+        }
+
+        else if constexpr (std::is_same_v<
                                T, mitl2gta::transducer::
                                       clock_val_greater_equals_t>) {
+          return gta_program_type_t::GUARD;
+        }
+
+        else if constexpr (std::is_same_v<
+                               T, mitl2gta::transducer::
+                                      clock_val_greater_equals_clock_t>) {
           return gta_program_type_t::GUARD;
         }
 
@@ -90,7 +110,21 @@ gta_program_type_t type(mitl2gta::transducer::gta_program_t const &prog) {
 
         else if constexpr (std::is_same_v<
                                T,
+                               mitl2gta::transducer::
+                                   clock_val_less_equals_clock_t>) {
+          return gta_program_type_t::GUARD;
+        }
+
+        else if constexpr (std::is_same_v<
+                               T,
                                mitl2gta::transducer::clock_val_less_than_t>) {
+          return gta_program_type_t::GUARD;
+        }
+
+        else if constexpr (std::is_same_v<
+                               T,
+                               mitl2gta::transducer::
+                                   clock_val_less_than_clock_t>) {
           return gta_program_type_t::GUARD;
         }
 
@@ -140,6 +174,38 @@ std::string clk_gt_val(mitl2gta::clock::clock_id_t const id,
 std::string clk_eq_val(mitl2gta::clock::clock_id_t const id,
                        mitl2gta::extended_integer_t const val) {
   return clk_op_val(id, "==", val);
+}
+
+std::string clk_op_clk(mitl2gta::clock::clock_id_t const lhs,
+                       std::string const &op,
+                       mitl2gta::clock::clock_id_t const rhs) {
+  return mitl2gta::clock::clock_name(lhs) + op +
+         mitl2gta::clock::clock_name(rhs);
+}
+
+std::string clk_leq_clk(mitl2gta::clock::clock_id_t const lhs,
+                        mitl2gta::clock::clock_id_t const rhs) {
+  return clk_op_clk(lhs, "<=", rhs);
+}
+
+std::string clk_lt_clk(mitl2gta::clock::clock_id_t const lhs,
+                       mitl2gta::clock::clock_id_t const rhs) {
+  return clk_op_clk(lhs, "<", rhs);
+}
+
+std::string clk_geq_clk(mitl2gta::clock::clock_id_t const lhs,
+                        mitl2gta::clock::clock_id_t const rhs) {
+  return clk_op_clk(lhs, ">=", rhs);
+}
+
+std::string clk_gt_clk(mitl2gta::clock::clock_id_t const lhs,
+                       mitl2gta::clock::clock_id_t const rhs) {
+  return clk_op_clk(lhs, ">", rhs);
+}
+
+std::string clk_eq_clk(mitl2gta::clock::clock_id_t const lhs,
+                       mitl2gta::clock::clock_id_t const rhs) {
+  return clk_op_clk(lhs, "==", rhs);
 }
 
 std::string abs_clk_leq_val(mitl2gta::clock::clock_id_t const id,
@@ -369,14 +435,34 @@ gta_program_disjunction(mitl2gta::transducer::gta_program_t const &prog,
 
         else if constexpr (std::is_same_v<
                                T,
+                               mitl2gta::transducer::
+                                   clock_val_equal_to_clock_t>) {
+          return {clk_eq_clk(arg.lhs_clk_id, arg.rhs_clk_id)};
+        }
+
+        else if constexpr (std::is_same_v<
+                               T,
                                mitl2gta::transducer::clock_val_greater_than>) {
           return {clk_gt_val(arg.clk_id, arg.value)};
+        }
+
+        else if constexpr (std::is_same_v<
+                               T,
+                               mitl2gta::transducer::
+                                   clock_val_greater_than_clock_t>) {
+          return {clk_gt_clk(arg.lhs_clk_id, arg.rhs_clk_id)};
         }
 
         else if constexpr (std::is_same_v<
                                T, mitl2gta::transducer::
                                       clock_val_greater_equals_t>) {
           return {clk_geq_val(arg.clk_id, arg.value)};
+        }
+
+        else if constexpr (std::is_same_v<
+                               T, mitl2gta::transducer::
+                                      clock_val_greater_equals_clock_t>) {
+          return {clk_geq_clk(arg.lhs_clk_id, arg.rhs_clk_id)};
         }
 
         else if constexpr (std::is_same_v<
@@ -421,8 +507,22 @@ gta_program_disjunction(mitl2gta::transducer::gta_program_t const &prog,
 
         else if constexpr (std::is_same_v<
                                T,
+                               mitl2gta::transducer::
+                                   clock_val_less_equals_clock_t>) {
+          return {clk_leq_clk(arg.lhs_clk_id, arg.rhs_clk_id)};
+        }
+
+        else if constexpr (std::is_same_v<
+                               T,
                                mitl2gta::transducer::clock_val_less_than_t>) {
           return {clk_lt_val(arg.clk_id, arg.value)};
+        }
+
+        else if constexpr (std::is_same_v<
+                               T,
+                               mitl2gta::transducer::
+                                   clock_val_less_than_clock_t>) {
+          return {clk_lt_clk(arg.lhs_clk_id, arg.rhs_clk_id)};
         }
 
         else if constexpr (std::is_same_v<
